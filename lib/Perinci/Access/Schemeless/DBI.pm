@@ -10,6 +10,8 @@ my $json = JSON->new->allow_nonref;
 
 use parent qw(Perinci::Access::Schemeless);
 
+# VERSION
+
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new(@_);

@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Perinci::Access::Schemeless::DBI;
+use Test::More 0.98;
 
 my $pa;
 
