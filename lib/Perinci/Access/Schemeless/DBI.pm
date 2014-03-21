@@ -180,6 +180,24 @@ If you have a large number of packages and functions, you might want to avoid
 reading Perl modules on the filesystem.
 
 
+=head1 TODO
+
+=over
+
+=item * Get code from database?
+
+=item * Make into a role?
+
+So users can mix and match either one or more of these as they see fit: getting
+list of modules and functions from database, getting metadata from database, and
+getting code from database.
+
+Alternatively, this single class can provide all of those and switch to enable
+each.
+
+=back
+
+
 =head1 SEE ALSO
 
 L<Riap>, L<Rinci>
