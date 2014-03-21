@@ -72,27 +72,39 @@ sub action_list {
     };
 
     my $sth;
+    my %mem;
+
+    my $pkg = $req->{-perl_package};
 
     # get submodules
     unless ($f_type && $f_type ne 'package') {
-        if (length $req->{-perl_package}) {
+        if (length $pkg) {
             $sth = $self->{dbh}->prepare(
                 "SELECT name FROM module WHERE name LIKE ? ORDER BY name");
-            $sth->execute("$req->{-perl_package}\::%");
+            $sth->execute("$pkg\::%");
         } else {
             $sth = $self->{dbh}->prepare(
                 "SELECT name FROM module ORDER BY name");
             $sth->execute;
         }
-        # XXX produce intermediate prefixes (e.g. user requests 'foo::bar' and
-        # db lists 'foo::bar::baz::quux', then we must also produce
-        # 'foo::bar::baz'
         while (my $r = $sth->fetchrow_hashref) {
-            my $m = $r->{name}; $m =~ s!::!/!g;
+            # strip pkg from name
+            my $m = substr($r->{name}, length($pkg));
+
+            # strip :: prefix
+            $m =~ s/\A:://;
+
+            # only take the first sublevel, e.g. if user requests 'foo::bar' and
+            # db lists 'foo::bar::baz::quux', then we only want 'baz'.
+            ($m) = $m =~ /(\w+)/;
+            $m .= "/";
+
+            next if $mem{$m}++;
+
             if ($detail) {
-                push @res, {uri=>"/$m/", type=>"package"};
+                push @res, {uri=>$m, type=>"package"};
             } else {
-                push @res, "/$m/";
+                push @res, $m;
             }
         }
     }
