@@ -126,6 +126,26 @@ sub action_list {
 
 =for Pod::Coverage ^(.+)$
 
+=head1 SYNOPSIS
+
+ use DBI;
+ use Perinci::Access::Schemeless::DBI;
+
+ my $dbh = DBI->connect(...);
+ my $pa = Perinci::Access::Schemeless::DBI->new(dbh => $dbh);
+
+ my $res;
+
+ # will retrieve list of code entities from database
+ $res = $pa->request(list => "/Foo/");
+
+ # will also get metadata from database
+ $res = $pa->request(meta => "/Foo/Bar/func1");
+
+ # the rest are the same like Perinci::Access::Schemeless
+ $res = $pa->request(actions => "/Foo/");
+
+
 =head1 DESCRIPTION
 
 This subclass of Perinci::Access::Schemeless gets lists of code entities
@@ -154,7 +174,8 @@ the future. An example of the table's contents:
 
 =head1 HOW IT WORKS
 
-The subclass overrides get_meta() and action_list().
+The subclass overrides C<get_meta()> and C<action_list()>. Thus, this modifies
+behaviors of the following Riap actions: C<list>, C<meta>, C<child_metas>.
 
 
 =head1 METHODS
@@ -183,6 +204,10 @@ reading Perl modules on the filesystem.
 =head1 TODO
 
 =over
+
+=item * Support other types of entities: variables, ...
+
+Currently only packages and functions are recognized.
 
 =item * Get code from database?
 
