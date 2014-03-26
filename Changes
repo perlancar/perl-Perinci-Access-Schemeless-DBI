@@ -1,5 +1,12 @@
 Revision history for Perinci-Access-Schemeless-DBI
 
+0.03     2014-03-26 (SHARYANTO)
+
+         - No functional changes.
+
+         - Add some tests.
+
+
 0.02     2014-03-21 (SHARYANTO)
 
          [BUG FIXES]
