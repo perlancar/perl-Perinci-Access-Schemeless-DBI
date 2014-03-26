@@ -34,7 +34,7 @@ sub get_meta {
         if ($meta) {
             $req->{-meta} = $json->decode($meta);
         } else {
-            return [400, "No metadata found in database"];
+            return [404, "No metadata found in database"];
         }
     } else {
         # XXP check in database, if exists return if not return {v=>1.1}
