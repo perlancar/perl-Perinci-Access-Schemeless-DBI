@@ -19,6 +19,8 @@ sub new {
     # check required attributes
     die "Please specify required attribute 'dbh'" unless $self->{dbh};
 
+    $self->{fallback_on_completion} //= 0;
+
     $self;
 }
 
@@ -134,6 +136,42 @@ sub action_list {
     [200, "OK (list action)", \@res];
 }
 
+sub action_complete_arg_val {
+    my ($self, $req) = @_;
+
+    goto FALLBACK unless $self->{fallback_on_completion};
+
+    my $arg = $req->{arg} or return err(400, "Please specify arg");
+
+    my $c = $req->{-meta}{$arg}{completion};
+    goto FALLBACK unless defined($c) && ref($c) ne 'CODE';
+
+    # get meta from parent's get_meta
+    local *get_meta = \&Perinci::Access::Schemeless::get_meta;
+    delete $req->{-meta};
+
+  FALLBACK:
+    $self->SUPER::action_complete_arg_val($req);
+}
+
+sub action_complete_arg_elem {
+    my ($self, $req) = @_;
+
+    goto FALLBACK unless $self->{fallback_on_completion};
+
+    my $arg = $req->{arg} or return err(400, "Please specify arg");
+
+    my $c = $req->{-meta}{$arg}{element_completion};
+    goto FALLBACK unless defined($c) && ref($c) ne 'CODE';
+
+    # get meta from parent's get_meta
+    local *get_meta = \&Perinci::Access::Schemeless::get_meta;
+    delete $req->{-meta};
+
+  FALLBACK:
+    $self->SUPER::action_complete_arg_elem($req);
+}
+
 1;
 # ABSTRACT: Subclass of Perinci::Access::Schemeless which gets lists of entities (and metadata) from DBI database
 
@@ -203,6 +241,13 @@ Aside from its parent class, this class recognizes these attributes:
 
 DBI database handle.
 
+=item * fallback_on_completion => BOOL (default: 0)
+
+If set to true, then for C<complete_arg_val> and C<complete_arg_elem>, if
+metadata has a non-coderef C<completion> or C<element_completion> in its
+argument spec, then will fallback to parent class L<Perinci::Access::Schemeless>
+for metadata.
+
 =back
 
 
@@ -212,6 +257,36 @@ DBI database handle.
 
 If you have a large number of packages and functions, you might want to avoid
 reading Perl modules on the filesystem.
+
+=head2 I have completion routine for my argument, completion no longer works?
+
+For example, suppose your function metadata is something like this:
+
+ {
+     v => 1.1,
+     summary => 'Delete account',
+     args => {
+         name => {
+             summary => 'Account name',
+             completion => sub {
+                 my %args = @_;
+                 my $word = $args{word};
+                 search_accounts(prefix => $word);
+             },
+         },
+     },
+ }
+
+When this is stored in the database, most serialization format (JSON included)
+doesn't save the code in C<completion>. If you use L<Data::Clean::JSON>, by
+default the coderef will be replaced with plain string C<CODE>. This prevents
+completion to work e.g. if you request with this Riap request:
+
+ {action=>'complete_arg_val', uri=>..., arg=>'name'}
+
+One solution is to fallback to its parent class L<Perinci::Access::Schemeless>
+(which reads metadata from Perl source files) for meta request when doing
+completion. To do this, you can set the attribute C<fallback_on_completion>.
 
 
 =head1 TODO
