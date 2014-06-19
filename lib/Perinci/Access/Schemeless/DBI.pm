@@ -64,11 +64,11 @@ sub action_list {
     my $filter_path = sub {
         my $path = shift;
         if (defined($self->{allow_paths}) &&
-                !__match_paths2($path, $self->{allow_paths})) {
+                !Perinci::Access::Schemeless::__match_paths2($path, $self->{allow_paths})) {
             return 0;
         }
         if (defined($self->{deny_paths}) &&
-                __match_paths2($path, $self->{deny_paths})) {
+                Perinci::Access::Schemeless::__match_paths2($path, $self->{deny_paths})) {
             return 0;
         }
         1;
