@@ -143,10 +143,12 @@ sub action_complete_arg_val {
 
     my $arg = $req->{arg} or return err(400, "Please specify arg");
 
-    my $c = $req->{-meta}{$arg}{completion};
+    $self->get_meta($req);
+    my $c = $req->{-meta}{args}{$arg}{completion};
     goto FALLBACK unless defined($c) && ref($c) ne 'CODE';
 
     # get meta from parent's get_meta
+    no warnings 'redefine';
     local *get_meta = \&Perinci::Access::Schemeless::get_meta;
     delete $req->{-meta};
 
