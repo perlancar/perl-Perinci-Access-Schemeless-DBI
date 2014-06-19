@@ -1,5 +1,16 @@
 Revision history for Perinci-Access-Schemeless-DBI
 
+0.04     2014-06-20 (SHARYANTO)
+
+         [ENHANCEMENTS]
+
+         - Add 'fallback_on_completion' attribute.
+
+         [BUG FIXES]
+
+         - A couple of bug fixes.
+
+
 0.03     2014-03-26 (SHARYANTO)
 
          - No functional changes.
