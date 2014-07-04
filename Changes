@@ -1,5 +1,18 @@
 Revision history for Perinci-Access-Schemeless-DBI
 
+0.05     2014-07-04 (SHARYANTO)
+
+         [INCOMPATIBLE CHANGES]
+
+         - Expected database schema changed ('module' column/table now
+           'package').
+
+         [ENHANCEMENTS]
+
+         - Check database schema version for databases created by
+           App::UpdateRinciMetadataDb.
+
+
 0.04     2014-06-20 (SHARYANTO)
 
          [ENHANCEMENTS]
