@@ -25,24 +25,26 @@ my $uniq = join('', map {("a".."z")[26*rand()]} 1..10);
 my $pkg = "Test::$uniq";
 
 # setup db
-$dbh->do("CREATE TABLE module (name TEXT PRIMARY KEY, metadata TEXT)");
+$dbh->do("CREATE TABLE meta (name VARCHAR(64) NOT NULL PRIMARY KEY, value VARCHAR(255))");
+$dbh->do("INSERT INTO meta (name,value) VALUES ('schema_version',2)");
+$dbh->do("CREATE TABLE package (name TEXT PRIMARY KEY, metadata TEXT)");
 for (
     {name=>"$pkg", metadata=>undef},
     {name=>"$pkg\::sub", metadata=>{v=>1.1, summary=>"blah"}},
 ) {
-    $dbh->do("INSERT INTO module (name,metadata) VALUES (?,?)", {},
+    $dbh->do("INSERT INTO package (name,metadata) VALUES (?,?)", {},
              $_->{name}, $json->encode($_->{metadata}));
 }
-$dbh->do("CREATE TABLE function (module TEXT, name TEXT, metadata TEXT)");
+$dbh->do("CREATE TABLE function (package TEXT, name TEXT, metadata TEXT)");
 for (
-    {module=>$pkg, name=>"f1", metadata=>{v=>1.1, summary=>"f1"}},
-    {module=>$pkg, name=>"f3", metadata=>{v=>1.1, summary=>"f3"}},
-    {module=>$pkg, name=>"f2", metadata=>{v=>1.1, summary=>"f2"}},
-    {module=>$pkg, name=>"f4", metadata=>{v=>1.1, summary=>"f4"}},
-    {module=>"$pkg\::sub", name=>"f1", metadata=>{v=>1.1, summary=>"sf1"}},
+    {package=>$pkg, name=>"f1", metadata=>{v=>1.1, summary=>"f1"}},
+    {package=>$pkg, name=>"f3", metadata=>{v=>1.1, summary=>"f3"}},
+    {package=>$pkg, name=>"f2", metadata=>{v=>1.1, summary=>"f2"}},
+    {package=>$pkg, name=>"f4", metadata=>{v=>1.1, summary=>"f4"}},
+    {package=>"$pkg\::sub", name=>"f1", metadata=>{v=>1.1, summary=>"sf1"}},
 ) {
-    $dbh->do("INSERT INTO function (module,name,metadata) VALUES (?,?,?)", {},
-             $_->{module}, $_->{name}, $json->encode($_->{metadata}));
+    $dbh->do("INSERT INTO function (package,name,metadata) VALUES (?,?,?)", {},
+             $_->{package}, $_->{name}, $json->encode($_->{metadata}));
 }
 
 # test

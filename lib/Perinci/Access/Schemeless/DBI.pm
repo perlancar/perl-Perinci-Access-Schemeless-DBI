@@ -17,7 +17,21 @@ sub new {
     my $self = $class->SUPER::new(@_);
 
     # check required attributes
-    die "Please specify required attribute 'dbh'" unless $self->{dbh};
+    my $dbh = $self->{dbh};
+    die "Please specify required attribute 'dbh'" unless $dbh;
+
+    # if this looks like a table created by App::UpdateRinciMetadataDb, check
+    # its version
+    {
+        my @tt = $dbh->tables(undef, undef);
+        last unless grep {$_ eq 'meta' || $_ eq '"meta"' || $_ eq '"main"."meta"'} @tt;
+
+        my ($sch_ver) = $dbh->selectrow_array(
+            "SELECT value FROM meta WHERE name='schema_version'");
+        if (!$sch_ver || $sch_ver ne '2') {
+            die "Database schema not supported, only version 2 is supported";
+        }
+    }
 
     $self->{fallback_on_completion} //= 0;
 
@@ -31,18 +45,18 @@ sub get_meta {
 
     if (length $leaf) {
         my ($meta) = $self->{dbh}->selectrow_array(
-            "SELECT metadata FROM function WHERE module=? AND name=?", {},
+            "SELECT metadata FROM function WHERE package=? AND name=?", {},
             $req->{-perl_package}, $leaf);
         if ($meta) {
             $req->{-meta} = $json->decode($meta);
         } else {
-            return [404, "No metadata found in database for module ".
+            return [404, "No metadata found in database for package ".
                         "'$req->{-perl_package}' and function '$leaf'"];
         }
     } else {
         # XXP check in database, if exists return if not return {v=>1.1}
         my ($meta) = $self->{dbh}->selectrow_array(
-            "SELECT metadata FROM module WHERE name=?", {},
+            "SELECT metadata FROM package WHERE name=?", {},
             $req->{-perl_package});
         if ($meta) {
             $req->{-meta} = $json->decode($meta);
@@ -79,15 +93,15 @@ sub action_list {
 
     my $pkg = $req->{-perl_package};
 
-    # get submodules
+    # get subpackages
     unless ($f_type && $f_type ne 'package') {
         if (length $pkg) {
             $sth = $self->{dbh}->prepare(
-                "SELECT name FROM module WHERE name LIKE ? ORDER BY name");
+                "SELECT name FROM package WHERE name LIKE ? ORDER BY name");
             $sth->execute("$pkg\::%");
         } else {
             $sth = $self->{dbh}->prepare(
-                "SELECT name FROM module ORDER BY name");
+                "SELECT name FROM package ORDER BY name");
             $sth->execute;
         }
         while (my $r = $sth->fetchrow_hashref) {
@@ -112,10 +126,10 @@ sub action_list {
         }
     }
 
-    # get all entities from this module. XXX currently only functions
+    # get all entities from this package. XXX currently only functions
     my $dir = $req->{-uri_dir};
     $sth = $self->{dbh}->prepare(
-        "SELECT name FROM function WHERE module=? ORDER BY name");
+        "SELECT name FROM function WHERE package=? ORDER BY name");
     $sth->execute($req->{-perl_package});
     while (my $r = $sth->fetchrow_hashref) {
         my $e = $r->{name};
@@ -206,10 +220,10 @@ This subclass of Perinci::Access::Schemeless gets lists of code entities
 listing Perl packages on the filesystem). It can also retrieve L<Rinci> metadata
 from said database (instead of from C<%SPEC> package variables).
 
-Currently, you must have a table containing list of packages named C<module>
-with columns C<name> (module name), C<metadata> (Rinci metadata, encoded in
+Currently, you must have a table containing list of packages named C<package>
+with columns C<name> (package name), C<metadata> (Rinci metadata, encoded in
 JSON); and a table containing list of functions named C<function> with columns
-C<module> (module name), C<name> (function name), and C<metadata> (normalized
+C<package> (package name), C<name> (function name), and C<metadata> (normalized
 Rinci metadata, encoded in JSON). Table and column names will be configurable in
 the future. An example of the table's contents:
 
@@ -218,7 +232,7 @@ the future. An example of the table's contents:
  Foo::Bar  (null)
  Foo::Baz  {"v":"1.1"}
 
- module    name         metadata
+ package   name         metadata
  ------    ----         --------
  Foo::Bar  func1        {"v":"1.1","summary":"function 1","args":{}}
  Foo::Bar  func2        {"v":"1.1","summary":"function 2","args":{}}
@@ -304,8 +318,8 @@ Currently only packages and functions are recognized.
 =item * Make into a role?
 
 So users can mix and match either one or more of these as they see fit: getting
-list of modules and functions from database, getting metadata from database, and
-getting code from database.
+list of packages and functions from database, getting metadata from database,
+and getting code from database.
 
 Alternatively, this single class can provide all of those and switch to enable
 each.
@@ -316,5 +330,7 @@ each.
 =head1 SEE ALSO
 
 L<Riap>, L<Rinci>
+
+L<App::UpdateRinciMetadataDb>
 
 =cut
