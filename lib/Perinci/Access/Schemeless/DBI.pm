@@ -1,5 +1,8 @@
 package Perinci::Access::Schemeless::DBI;
 
+# DATE
+# VERSION
+
 use 5.010001;
 use strict;
 use warnings;
@@ -9,8 +12,6 @@ use JSON;
 my $json = JSON->new->allow_nonref;
 
 use parent qw(Perinci::Access::Schemeless);
-
-# VERSION
 
 sub new {
     my $class = shift;
@@ -303,28 +304,6 @@ completion to work e.g. if you request with this Riap request:
 One solution is to fallback to its parent class L<Perinci::Access::Schemeless>
 (which reads metadata from Perl source files) for meta request when doing
 completion. To do this, you can set the attribute C<fallback_on_completion>.
-
-
-=head1 TODO
-
-=over
-
-=item * Support other types of entities: variables, ...
-
-Currently only packages and functions are recognized.
-
-=item * Get code from database?
-
-=item * Make into a role?
-
-So users can mix and match either one or more of these as they see fit: getting
-list of packages and functions from database, getting metadata from database,
-and getting code from database.
-
-Alternatively, this single class can provide all of those and switch to enable
-each.
-
-=back
 
 
 =head1 SEE ALSO
