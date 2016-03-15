@@ -8,8 +8,8 @@ use strict;
 use warnings;
 use experimental 'smartmatch';
 
-use JSON;
-my $json = JSON->new->allow_nonref;
+use JSON::MaybeXS;
+my $json = JSON::MaybeXS->new->allow_nonref;
 
 use parent qw(Perinci::Access::Schemeless);
 

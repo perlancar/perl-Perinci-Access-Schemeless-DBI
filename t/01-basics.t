@@ -7,7 +7,7 @@ use warnings;
 use DBI;
 use File::chdir;
 use File::Temp qw(tempdir);
-use JSON;
+use JSON::MaybeXS;
 use Perinci::Access::Schemeless;
 use Perinci::Access::Schemeless::DBI;
 use Test::More 0.98;
@@ -16,7 +16,7 @@ use Test::More 0.98;
 # db, and check that we can list/meta into it, even though the package does not
 # exist yet in perl.
 
-my $json = JSON->new->allow_nonref;
+my $json = JSON::MaybeXS->new->allow_nonref;
 my $rootdir = tempdir(CLEANUP=>1);
 $CWD = $rootdir;
 my $dbh = DBI->connect("dbi:SQLite:dbname=$rootdir/db.db", '', '',
