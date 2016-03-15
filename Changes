@@ -1,5 +1,12 @@
 Revision history for Perinci-Access-Schemeless-DBI
 
+0.08    2016-03-16 (PERLANCAR)
+
+	- No functional changes.
+
+	- Replace JSON with JSON::MaybeXS.
+
+
 0.07    2015-09-03 (PERLANCAR)
 
 	- No functional changes.
