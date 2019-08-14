@@ -29,8 +29,9 @@ sub new {
 
         my ($sch_ver) = $dbh->selectrow_array(
             "SELECT value FROM meta WHERE name='schema_version'");
-        if (!$sch_ver || $sch_ver ne '2') {
-            die "Database schema not supported, only version 2 is supported";
+        $sch_ver //= 0;
+        if (!$sch_ver || $sch_ver !~ /^(2|3|4|5)$/) {
+            die "Database schema version ($sch_ver) not supported, only version 2-5 is supported";
         }
     }
 
